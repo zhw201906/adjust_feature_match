@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QVector>
 #include <QSettings>
+#include <QPoint>
 
 #include "opencv2/opencv.hpp"
 
@@ -45,6 +46,9 @@ public:
     ~LearnFeature();
 
     void closeEvent(QCloseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
+    void wheelEvent(QWheelEvent *event);
     //void paintEvent(QPaintEvent *event);
 
     bool eventFilter(QObject *watched, QEvent *event);
@@ -56,6 +60,7 @@ public:
 	void SaveFeaturePicture(QString &path);
 	void SaveFeatureConfigText(QString &path);
 
+    void ShowPictureTask(QPixmap &pix, QPoint offset_pt);
 
 
 signals:
@@ -66,6 +71,7 @@ private:
     QString  picture_path_;
     cv::Mat  origin_feature_pic_;
 
+    QPixmap  source_picture_;
     int feature_center_x_;     //特征中心x坐标
     int feature_center_y_;     //特征中心y坐标
 
@@ -78,10 +84,17 @@ private:
 	int  feature_id_;
 
     float scale_para_;   //图像显示缩放系数
+    //float scale_min_;
 
     int  width_;   //特征长
     int  height_;  //特征宽
     int  radius_;  //特征半径
+
+    bool move_flag_; //移动标志位
+    //int  offset_x_;  //显示图像偏移
+    //int  offset_y_;
+    QPoint  move_pt_head_;
+    QPoint  move_pt_tail_;
 
 	int pt_move_status_;
 	int pt_left_;   //选区框位置定义

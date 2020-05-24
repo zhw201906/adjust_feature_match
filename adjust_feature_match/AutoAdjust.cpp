@@ -121,6 +121,15 @@ AutoAdjust::AutoAdjust(QWidget *parent)
 	camera_flag_ = false;
 	recognize_flag_ = false;
 	last_frame_finished_ = false;
+    function_bit_ = CMD_QUERY_STATUS;
+    recognize_id_ = 0;
+    cur_fea_id_ = 0;
+    serial_recg_mode_ = false;
+
+    {
+        serial_send_buff_[0] = 0x43;
+        serial_send_buff_[1] = 0x4e;
+    }
 
 	ui.text_log->moveCursor(QTextCursor::End);  //log自动滚动到底
 	pSdk_camera_ = new SdkCamera(this);
@@ -142,6 +151,7 @@ AutoAdjust::AutoAdjust(QWidget *parent)
 		{
 			image = QImage(pRgbFrameBuf, nWidth, nHeight, QImage::Format_RGB888);
 		}
+
 		cv::Mat img = QImage2Mat(image);
 		capfream = img.clone();
 		//ui.text_log->append("get frame success!");
@@ -160,7 +170,14 @@ AutoAdjust::AutoAdjust(QWidget *parent)
 		{
 			ui.text_log->append("begin match feature!");
 			source_img_ = convertTo3Channels(capfream).clone();
-			EnableMatchTask();
+            if (serial_recg_mode_)
+            {
+                EnableMatchTaskById(recognize_id_);
+            }
+            else
+            {
+                EnableMatchTask();
+            }
 			last_frame_finished_ = false;
 		}
 
@@ -267,6 +284,8 @@ AutoAdjust::AutoAdjust(QWidget *parent)
 
 	//初始化--机芯特征列表
 	RefreshFeatureType();
+
+    LoadAllFeatureCfg();
 
     //开始按钮----启动视频流识别
     connect(ui.btn_ctrl_status, &QPushButton::clicked, [=]() {  
@@ -493,10 +512,60 @@ void AutoAdjust::closeEvent(QCloseEvent * event)
 //处理串口消息
 void AutoAdjust::DealSerialMsg()
 {
+    static int i = 0;
     QByteArray reciver = p_serial_port_->readAll();
-    qDebug() << "serial reciver data:" << reciver;
+    qDebug() << "serial reciver data " << ++i << " :" << reciver;
+    ui.text_log->append(QString(reciver));
     
+    QDataStream out(&reciver, QIODevice::ReadWrite);    //将字节数组读入
 
+    serial_buff_.clear();
+    while (!out.atEnd())
+    {
+        quint8 outChar = 0;
+        out >> outChar;   //每字节填充一次，直到结束
+        //十六进制的转换
+        serial_buff_.push_back(outChar);
+    }
+
+    if (!TestSerialReceiveDataAvailable(serial_buff_))
+    {
+        qDebug() << "serial data frame error";
+        return;
+    }
+
+    int error = 0;
+    if (fea_info_map_.find(recognize_id_) == fea_info_map_.end())
+    {
+        error = 1;
+    }
+    else if (!camera_flag_)
+    {
+        error = 2;
+    }
+
+    //查看功能码
+    switch (function_bit_)
+    {
+        case CMD_QUERY_STATUS: {
+            PackReturnStatusData(error);
+            SendSerialRecgResult(serial_send_buff_);
+        }; break;
+
+        case CMD_RECOGNIZE: {
+            if (error != 0)
+            {
+                PackReturnStatusData(error);
+                SendSerialRecgResult(serial_send_buff_);
+            }
+            else
+            {
+                //EnableMatchTaskById(recognize_id_);
+                ui.text_log->append("begin serial comand recognize");
+                serial_recg_mode_ = true;
+            }
+        }; break;
+    }
 }
 
 //串口初始化
@@ -619,10 +688,91 @@ void AutoAdjust::LoadFeatureCfg()
 	}
 }
 
+//载入全部特征，将工件id与特征信息存储在map中
+void AutoAdjust::LoadAllFeatureCfg()
+{  
+    qDebug() << "LoadAllFeatureCfg";
+
+    QVector<QString> fea_dir;
+
+    QDir dir(FEATURE_PATH);
+    dir.setFilter(QDir::Dirs);
+    foreach(QFileInfo fullDir, dir.entryInfoList())
+    {
+        if (fullDir.fileName() == "." || fullDir.fileName() == "..") continue;
+        fea_dir.push_back(fullDir.fileName());
+    }
+
+    for (int i = 0; i < fea_dir.size(); i++)
+    {
+        QString fea_name = QString(FEATURE_PATH) + QString('\\') + fea_dir[i];
+        QString cfg_name = fea_name + QString('\\') + fea_dir[i] + QString("_cfg.ini");
+
+        qDebug() << "fea_name" << fea_name;
+        qDebug() << "cfg_name" << cfg_name;
+        FeatureInfoData fea_info_data;
+        QSettings readcfg(cfg_name, QSettings::IniFormat);
+
+        fea_info_data.feature_num = readcfg.value("fea_num").toInt();
+        int fea_id = readcfg.value("cfg_id").toInt();
+
+        for (int i = 0; i < fea_info_data.feature_num; i++)
+        {
+            FeatureInfo fea;
+            fea.id = readcfg.value(QString("fea%1_id").arg(i + 1)).toInt();
+            fea.type = readcfg.value(QString("fea%1_type").arg(i + 1)).toInt();
+            fea.x = readcfg.value(QString("cen%1_x").arg(i + 1)).toInt();
+            fea.y = readcfg.value(QString("cen%1_y").arg(i + 1)).toInt();
+
+            if (fea.type == RECTANGLE)
+            {
+                fea.h = readcfg.value(QString("rtg%1_height").arg(i + 1)).toInt();
+                fea.w = readcfg.value(QString("rtg%1_width").arg(i + 1)).toInt();
+            }
+            else if (fea.type == CIRCLE)
+            {
+                fea.r = readcfg.value(QString("cir%1_radius").arg(i + 1)).toInt();
+            }
+
+            fea.part = readcfg.value(QString("part%1_status").arg(i + 1)).toInt();
+            if (fea.part == 1)
+            {
+                fea.left = readcfg.value(QString("part%1_left").arg(i + 1)).toInt();
+                fea.top = readcfg.value(QString("part%1_top").arg(i + 1)).toInt();
+                fea.right = readcfg.value(QString("part%1_right").arg(i + 1)).toInt();
+                fea.bottom = readcfg.value(QString("part%1_bottom").arg(i + 1)).toInt();
+            }
+            fea_info_data.fea_info_data.push_back(fea);
+        }
+
+        QDir dir(fea_name);
+        QStringList ImageList;
+        ImageList << "*.bmp";             //向字符串列表添加图片类型
+        dir.setNameFilters(ImageList);    //获得文件夹下图片的名字
+        int ImageCount = dir.count();     //获得dir里名字的个数，也表示文件夹下图片的个数
+        for (int i = 0; i < ImageCount; i++)
+        {
+            qDebug() << "name:" << dir[i];
+            QString ImageName = fea_name + QString('\\') + dir[i];
+            cv::Mat cur_img = cv::imread(ImageName.toStdString());
+            fea_info_data.fea_image_buff.push_back(cur_img);
+        }
+        qDebug() << "load feature image " << fea_info_data.fea_image_buff.size() << "th finished!" << endl;
+
+        if (fea_info_data.fea_image_buff.size() != fea_info_data.feature_num)
+        {
+            msg_box_.critical(this, QString::fromLocal8Bit("错误"), QString::fromLocal8Bit("特征文件或者特征已被损坏!"));
+            continue;
+        }
+
+        fea_info_map_[fea_id] = fea_info_data;
+    }
+}
+
 //处理匹配结果
 void AutoAdjust::DealMatchResult(int i, cv::Point pos_lt, cv::Point pos_rb)
 {
-    if (pos_lt == cv::Point(0, 0) || pos_rb == cv::Point(0, 0))
+    if (pos_lt.x == 0 || pos_lt.y == 0 || pos_rb.x == 0 || pos_rb.y == 0)
     {
         match_thread_[i].quit();
         match_thread_[i].wait();
@@ -650,7 +800,6 @@ void AutoAdjust::DealMatchResult(int i, cv::Point pos_lt, cv::Point pos_rb)
         match_loc_buff_[i] = res_loc;
     }
 
-    
     thread_flag_[i] = true;
 	if (AllThreadFinished())
 	{
@@ -665,7 +814,13 @@ void AutoAdjust::DealMatchResult(int i, cv::Point pos_lt, cv::Point pos_rb)
 		if (curt_faeture_num_ > 2)		ui.label_fea3->setText(QString("(%1,%2)").arg(match_loc_buff_[2].x).arg(match_loc_buff_[2].y));
 		if (curt_faeture_num_ > 3)		ui.label_fea4->setText(QString("(%1,%2)").arg(match_loc_buff_[3].x).arg(match_loc_buff_[3].y));
 
-		last_frame_finished_ = true;
+        if (serial_recg_mode_)
+        {
+            PackReturnRecgResult(match_loc_buff_);
+            SendSerialRecgResult(serial_send_buff_);
+            serial_recg_mode_ = false;
+        }
+        last_frame_finished_ = true;
 	}
 }
 
@@ -744,6 +899,34 @@ void AutoAdjust::EnableMatchTask()
 	}
 }
 
+//通过工件id使能识别
+void AutoAdjust::EnableMatchTaskById(int id)
+{
+    thread_flag_.clear();
+    area_image_buff_.clear();
+    for (int i = 0; i < fea_info_map_[id].fea_image_buff.size(); i++)
+    {
+        cv::Mat null_mat;
+        area_image_buff_.push_back(null_mat);
+        if (fea_info_map_[id].fea_info_data[i].part == 1)
+        {
+            cv::Rect roi = cv::Rect(cv::Point(fea_info_map_[id].fea_info_data[i].left, fea_info_map_[id].fea_info_data[i].top),
+                cv::Point(fea_info_map_[id].fea_info_data[i].right, fea_info_map_[id].fea_info_data[i].bottom));
+            area_image_buff_[i] = source_img_(roi).clone();
+            match_thread_[i].SetImageData(area_image_buff_[i], fea_info_map_[id].fea_image_buff[i], 1);
+        }
+        else
+        {
+            match_thread_[i].SetImageData(source_img_, fea_info_map_[id].fea_image_buff[i], 0.5);
+        }
+        match_thread_[i].start();
+
+        thread_flag_.push_back(false);
+    }
+
+    serial_recg_mode_ = true;
+}
+
 //判断多线程识别特征是否完成
 bool AutoAdjust::AllThreadFinished()
 {
@@ -816,6 +999,95 @@ void AutoAdjust::CloseSdkCamera()
 	pSdk_camera_->CameraStop();
 	ui.text_log->append("Close camera success");
 }
+
+//校验串口帧数据
+bool AutoAdjust::TestSerialReceiveDataAvailable(QVector<quint8>& rbuff)
+{
+    if (rbuff.size() != FRAME_SIZE)
+        return false;
+
+    if (rbuff[0] == FRAME_ONE && rbuff[1] == FRAME_TWO)
+    {
+        int cek_sum = 0;
+        for (int i = 0; i < rbuff.size() - 1; i++)
+        {
+            cek_sum += rbuff[i];
+        }
+        if (cek_sum != rbuff[rbuff.size() - 1])
+        {
+            return false;
+        }
+    }
+
+    //校验通过
+    function_bit_ = rbuff[2];
+    recognize_id_ = rbuff[3];
+    return true;
+}
+
+//处理串口指令
+void AutoAdjust::DealSerialCmdTask()
+{
+    if (!camera_flag_)
+    {
+        qDebug() << "camera is not online";
+        return;
+    }
+
+}
+
+//串口发送识别结果
+void AutoAdjust::SendSerialRecgResult(QByteArray & sbuff)
+{
+    p_serial_port_->write(sbuff);
+}
+
+//打包上位机状态
+void AutoAdjust::PackReturnStatusData(int status)
+{
+    serial_send_buff_.clear();
+    serial_send_buff_.resize(21);
+    serial_send_buff_[0] = FRAME_ONE;
+    serial_send_buff_[1] = FRAME_TWO;
+    serial_send_buff_[2] = (status & 0xff);
+    serial_send_buff_[3] = recognize_id_;
+    for (int i = 0; i < 16; i++)
+    {
+        serial_send_buff_[i+4] = 0x00;
+    }
+    CalCheckSumResult();
+}
+
+//打包识别结果
+void AutoAdjust::PackReturnRecgResult(QVector<cv::Point>& rresult)
+{
+    serial_send_buff_.clear();
+    serial_send_buff_.resize(21);
+    serial_send_buff_[0] = FRAME_ONE;
+    serial_send_buff_[1] = FRAME_TWO;
+    serial_send_buff_[2] = 0x00;
+    serial_send_buff_[3] = recognize_id_;
+    for (int i = 0; i < rresult.size(); i++)
+    {
+        serial_send_buff_[i * 4 + 4] = ((rresult[i].x>>8) & 0xFF);
+        serial_send_buff_[i * 4 + 5] = (rresult[i].x & 0xFF);
+        serial_send_buff_[i * 4 + 6] = ((rresult[i].y >> 8) & 0xFF);
+        serial_send_buff_[i * 4 + 7] = (rresult[i].y & 0xFF);
+    }
+    CalCheckSumResult();
+}
+
+//计算校验位的值
+void AutoAdjust::CalCheckSumResult()
+{
+    int sum = 0;
+    for (int i = 0; i < 20; i++)
+    {
+        sum += serial_send_buff_[i];
+    }
+    serial_send_buff_[20] = (sum & 0xff);
+}
+
 
 
 

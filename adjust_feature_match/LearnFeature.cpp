@@ -17,7 +17,7 @@
 //参数2：控件宽度（IN）
 //参数3：控件高度（IN）
 //参数4：缩放后结果图（OUT）
-void Geometric_Scaling_Image(const QString path, const int control_width, const int control_height, QPixmap &dst_pix)
+static void Geometric_Scaling_Image(const QString path, const int control_width, const int control_height, QPixmap &dst_pix)
 {
     QPixmap pix;
     pix.load(path);
@@ -66,8 +66,13 @@ LearnFeature::LearnFeature(QWidget *parent)
 	part_match_flag_ = false;
 	pt_move_status_ = 0;
 
+    move_flag_ = false;
+    //offset_x_ = 0;
+    //offset_y_ = 0;
+
     ui.label_image->installEventFilter(this);
 
+    //this->grabKeyboard();
 
 	//刷新特征列表
 	RefreshFeatureList();
@@ -120,19 +125,27 @@ LearnFeature::LearnFeature(QWidget *parent)
         {
             picture_path_ = pic_path;
             diaplay_pic_flag_ = true;
-            QPixmap pix;
+            QPixmap pix(picture_path_);
+            source_picture_ = pix.copy();
             Geometric_Scaling_Image(picture_path_, ui.label_image->width(), ui.label_image->height(), pix);
+
+            //QPixmap showPix = pix.copy(QRect(offset_x_, offset_y_, ui.label_image->width(), ui.label_image->height()));
             ui.label_image->setPixmap(pix);
 
             qDebug() << picture_path_ << endl;
             origin_feature_pic_ = cv::imread(picture_path_.toStdString());
             //cv::imshow("image", origin_feature_pic_);
             scale_para_ = ui.label_image->width()*1.0f / origin_feature_pic_.cols;
+            //scale_min_ = scale_para_;
         }      
     });
 
     //中心坐标粗定位
     connect(ui.label_image, &MyDisplayLabel::mousePress, [=]() {
+        move_pt_head_.setX(ui.label_image->x());
+        move_pt_head_.setY(ui.label_image->y());
+
+
 		if (!diaplay_pic_flag_)
 			return;
 
@@ -177,8 +190,22 @@ LearnFeature::LearnFeature(QWidget *parent)
 
 	//鼠标释放确定选区
 	connect(ui.label_image, &MyDisplayLabel::mouseRelease, [=]() {
-		if (!diaplay_pic_flag_)
-			return;
+        qDebug() << "mouse have release";
+        move_pt_tail_.setX(ui.label_image->x());
+        move_pt_tail_.setY(ui.label_image->y());
+
+        if (move_flag_)
+        {           
+            //offset_x_ += (move_pt_head_.x() - move_pt_tail_.x());
+            //offset_y_ += (move_pt_head_.y() - move_pt_tail_.y());
+
+            //qDebug() << "move finished! x:" << offset_x_ << " y:" << offset_y_;
+            //ShowPictureTask(source_picture_, QPoint(offset_x_, offset_y_));
+            return;
+        }
+
+        if (!diaplay_pic_flag_)
+            return;
 
 		if (part_match_flag_&&pt_move_status_ % 2 == 1)  //画矩形框
 		{
@@ -321,6 +348,43 @@ void LearnFeature::closeEvent(QCloseEvent * event)
     emit closeUi();
 }
 
+void LearnFeature::keyPressEvent(QKeyEvent * event)
+{
+    if (event->key() == Qt::Key_Alt)
+    {
+        qDebug() << "alt have pressed";
+        move_flag_ = true;
+        this->setCursor(Qt::PointingHandCursor);
+        return;
+    }      
+}
+
+void LearnFeature::keyReleaseEvent(QKeyEvent * event)
+{
+    if (event->key() == Qt::Key_Alt)
+    {
+        qDebug() << "alt have released";
+        move_flag_ = false;
+        this->setCursor(Qt::ArrowCursor);
+        return;
+    }
+}
+
+void LearnFeature::wheelEvent(QWheelEvent *event)    // 滚轮事件
+{
+    //if (event->delta() > 0) {                    // 当滚轮远离使用者时
+    //    if (scale_para_ < 1)
+    //        scale_para_ += 0.1;
+    //    //ui->textEdit->zoomIn();                // 进行放大
+    //}
+    //else {                                     // 当滚轮向使用者方向旋转时
+    //    if(scale_para_> scale_min_)
+    //        scale_para_ -= 0.1;
+    //    //ui->textEdit->zoomOut();               // 进行缩小
+    //}
+    //ShowPictureTask(source_picture_, QPoint(offset_x_, offset_y_));
+}
+
 //过滤绘图事件
 bool LearnFeature::eventFilter(QObject * watched, QEvent * event)
 {
@@ -330,6 +394,7 @@ bool LearnFeature::eventFilter(QObject * watched, QEvent * event)
         paintTask();
         return true;
     }
+    //else if()
     return QWidget::eventFilter(watched, event);
 }
 
@@ -684,6 +749,18 @@ void LearnFeature::SaveFeatureConfigText(QString &path)
 		}
 	}
 	
+}
+
+void LearnFeature::ShowPictureTask(QPixmap & pix, QPoint offset_pt)
+{
+    if (offset_pt.x() + ui.label_image->width() > pix.width() || offset_pt.y() + ui.label_image->height() > pix.height())
+    {
+        msg_box_.critical(this, QString::fromLocal8Bit("错误"), QString::fromLocal8Bit("移动到底！"));
+        return;
+    }
+
+    QPixmap showPix = pix.copy(QRect(offset_pt.x(), offset_pt.y(), ui.label_image->width(), ui.label_image->height()));
+    ui.label_image->setPixmap(showPix);
 }
 
 

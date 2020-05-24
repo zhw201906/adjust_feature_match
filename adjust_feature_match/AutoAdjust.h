@@ -12,6 +12,8 @@
 #include <QDateTime>
 #include <QDate>
 #include <QImage>
+#include <QMap>
+#include <QByteArray>
 
 #include "opencv2/opencv.hpp"
 #include <windows.h>
@@ -26,6 +28,13 @@
 #define  AVAILABLE_TIME  "31.07.2020"
 #define  THREAD_NUM_   4
 
+#define  FRAME_ONE   0x43
+#define  FRAME_TWO   0x4e
+#define  FRAME_SIZE  5U
+
+enum { CMD_QUERY_STATUS = 0, CMD_RECOGNIZE = 1 };
+enum { STATUS_NORMAL, STATUS_ERROR };
+
 class AutoAdjust : public QWidget
 {
     Q_OBJECT
@@ -39,15 +48,32 @@ public:
     void DealSerialMsg();
 	void SerialInit();
 	void LoadFeatureCfg();
+    void LoadAllFeatureCfg();
     void DealMatchResult(int thread_id, cv::Point pt_lt, cv::Point pt_rb);
 
     void MatchFeature(cv::Mat &src, cv::Mat &dst);
 	void EnableMatchTask();
+    void EnableMatchTaskById(int id);
 	bool AllThreadFinished();
 
 	bool TestSdkCamera();
 	bool OpenSdkCamera();
 	void CloseSdkCamera();
+
+    bool TestSerialReceiveDataAvailable(QVector<quint8>& rbuff);
+    void DealSerialCmdTask();
+    void SendSerialRecgResult(QByteArray &sbuff);
+    void PackReturnStatusData(int status);
+    void PackReturnRecgResult(QVector<cv::Point>& rresult);
+    void CalCheckSumResult();
+
+public:
+    typedef struct feature_data_
+    {
+        int                   feature_num;
+        QVector<FeatureInfo>  fea_info_data;
+        QVector<cv::Mat>      fea_image_buff;
+    }FeatureInfoData;
 
 private:
     Ui::AutoAdjustClass ui;
@@ -75,6 +101,11 @@ private:
 
 	int         curt_faeture_num_;
 	int         curt_feature_id_;
+
+    QMap<int, FeatureInfoData>  fea_info_map_;    // ID与特征储存map
+    int   cur_fea_id_;
+
+
 	QVector<FeatureInfo>  curt_feature_info_;    //当前特征信息
 	QString     curt_feature_path_;    //当前特征地址
     QVector<cv::Mat> feature_img_buff_;   //特征图
@@ -91,4 +122,9 @@ private:
 	SdkCamera  *pSdk_camera_;
 	QImage   current_picture_stream_;
 
+    QVector<quint8>  serial_buff_;
+    quint8           function_bit_;
+    int              recognize_id_;
+    bool             serial_recg_mode_;
+    QByteArray       serial_send_buff_;
  };

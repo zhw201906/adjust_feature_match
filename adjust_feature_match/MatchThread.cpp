@@ -23,7 +23,15 @@ MatchThread::~MatchThread()
 
 void MatchThread::run()
 {
-    MatchTask(src_img_, src_kernal_);
+    try
+    {
+        MatchTask(src_img_, src_kernal_);
+    }
+    catch (...)
+    {
+        match_position_lt = cv::Point(0, 0);
+        match_position_rb = cv::Point(0, 0);
+    }
     emit match_result(match_position_lt, match_position_rb);  
 }
 

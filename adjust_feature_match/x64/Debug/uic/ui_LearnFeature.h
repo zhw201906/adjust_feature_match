@@ -453,12 +453,17 @@ public:
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">3\343\200\201\347\202\271\345\207\273\347\211\271\345\276\201\345\233\276\344\270\255\347\233\256\346\240\207\347\211\271\345\276\201\344\270\255\345\277\203\344\275\215\347\275\256\357\274\233</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">4\343\200\201\351\200\232\350\277\207X\343\200\201Y\345\235\220\346\240\207\345\257\271\344\270\255\345\277\203\344\275\215\347\275\256\347\273\206\345\256\232\344\275\215\357\274\233</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">5\343\200\201\347\241\256\345\256"
-                        "\232\346\227\240\350\257\257\345\220\216\357\274\214\347\202\271\345\207\273\347\241\256\345\256\232\347\211\271\345\276\201\357\274\233</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">6\343\200\201\345\244\232\344\270\252\347\211\271\345\276\201\346\227\266\351\207\215\345\244\215\346\255\245\351\252\2442--5\357\274\233</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">7\343\200\201\350\207\252\345\212\250\347\224\237\346\210\220\347\232\204\347\211\271\345\276\201\351\200\211\345\217\226\347\273\223\346\236\234\357\274\233</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">8\343\200\201\350\276\223\345\205\245\345\267\245\344\273\266\345\236\213\345\217\267"
-                        "\357\274\210\344\270\215\345\217\257\351\207\215\345\244\215\357\274\211\357\274\233</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">9\343\200\201\347\241\256\345\256\232\345\255\246\344\271\240\357\274\214\347\211\271\345\276\201\345\255\246\344\271\240\345\256\214\346\210\220\343\200\202</span></p></body></html>", Q_NULLPTR));
+                        "\232\347\211\271\345\276\201\347\202\271\351\200\211\345\217\226\346\227\240\350\257\257\345\220\216\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">6\343\200\201\345\275\223\345\211\215\347\211\271\345\276\201\346\230\257\345\220\246\345\210\206\345\214\272\350\257\206\345\210\253\357\274\214\351\234\200\350\246\201\346\227\266\345\213\276\351\200\211\345\210\206\345\214\272\351\241\271\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">7\343\200\201\345\234\250\347\211\271\345\276\201\345\233\276\344\270\255\346\213\226\345\212\250\351\274\240\346\240\207\345\267\246\351\224\256\345\210\233\345\273\272\347\237\251\345\275\242\351\200\211\345\217\226\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-righ"
+                        "t:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">8\343\200\201\351\200\232\350\277\207\345\267\246\344\270\212\345\217\263\344\270\213\345\233\233\347\202\271\345\235\220\346\240\207\350\260\203\346\225\264\351\200\211\345\214\272\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">9\343\200\201\346\227\240\350\257\257\345\220\216\357\274\214\347\202\271\345\207\273\347\241\256\345\256\232\347\211\271\345\276\201\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">a\343\200\201\345\244\232\344\270\252\347\211\271\345\276\201\346\227\266\351\207\215\345\244\215\346\255\245\351\252\2442--9\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0"
+                        "px;\"><span style=\" font-size:10pt;\">b\343\200\201\350\207\252\345\212\250\347\224\237\346\210\220\347\232\204\347\211\271\345\276\201\351\200\211\345\217\226\347\273\223\346\236\234\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">c\343\200\201\350\276\223\345\205\245\345\267\245\344\273\266\345\236\213\345\217\267\357\274\210\344\270\215\345\217\257\351\207\215\345\244\215\357\274\211\357\274\214\345\267\245\344\273\266ID\357\274\233</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">d\343\200\201\347\241\256\345\256\232\345\255\246\344\271\240\357\274\214\347\211\271\345\276\201\345\255\246\344\271\240\345\256\214\346\210\220\343\200\202</span></p></body></html>", Q_NULLPTR));
         groupBox_7->setTitle(QApplication::translate("LearnFeature", "\347\211\271\345\276\201\345\210\227\350\241\250", Q_NULLPTR));
         label_13->setText(QApplication::translate("LearnFeature", "\346\234\272\350\212\257\347\211\271\345\276\201\357\274\232", Q_NULLPTR));
         btn_del_feature->setText(QApplication::translate("LearnFeature", "\345\210\240\351\231\244\347\211\271\345\276\201", Q_NULLPTR));
@@ -471,12 +476,12 @@ public:
         groupBox->setTitle(QApplication::translate("LearnFeature", "\347\211\271\345\276\201\345\275\242\347\212\266\345\217\212\345\244\247\345\260\217", Q_NULLPTR));
         radioButton_rec->setText(QApplication::translate("LearnFeature", "\347\237\251\345\275\242", Q_NULLPTR));
         label_4->setText(QApplication::translate("LearnFeature", "\351\225\277\357\274\232", Q_NULLPTR));
-        lineEdit_width->setText(QApplication::translate("LearnFeature", "50", Q_NULLPTR));
+        lineEdit_width->setText(QApplication::translate("LearnFeature", "200", Q_NULLPTR));
         label_5->setText(QApplication::translate("LearnFeature", "\345\256\275\357\274\232", Q_NULLPTR));
-        lineEdit_height->setText(QApplication::translate("LearnFeature", "40", Q_NULLPTR));
+        lineEdit_height->setText(QApplication::translate("LearnFeature", "100", Q_NULLPTR));
         radioButton_cir->setText(QApplication::translate("LearnFeature", "\345\234\206", Q_NULLPTR));
         label_6->setText(QApplication::translate("LearnFeature", "\345\215\212\345\276\204\357\274\232", Q_NULLPTR));
-        lineEdit_radius->setText(QApplication::translate("LearnFeature", "50", Q_NULLPTR));
+        lineEdit_radius->setText(QApplication::translate("LearnFeature", "100", Q_NULLPTR));
         btn_load_image->setText(QApplication::translate("LearnFeature", "\350\275\275\345\205\245\345\233\276\347\211\207", Q_NULLPTR));
         btn_reboot_feature->setText(QApplication::translate("LearnFeature", "\351\207\215\347\275\256\347\211\271\345\276\201", Q_NULLPTR));
         groupBox_8->setTitle(QApplication::translate("LearnFeature", "\345\210\206\345\214\272\345\214\272\345\237\237", Q_NULLPTR));
@@ -485,9 +490,9 @@ public:
         label_10->setText(QApplication::translate("LearnFeature", "\344\270\212\357\274\232", Q_NULLPTR));
         lineEdit_top->setText(QApplication::translate("LearnFeature", "0", Q_NULLPTR));
         label_11->setText(QApplication::translate("LearnFeature", "\345\217\263\357\274\232", Q_NULLPTR));
-        lineEdit_right->setText(QApplication::translate("LearnFeature", "100", Q_NULLPTR));
+        lineEdit_right->setText(QApplication::translate("LearnFeature", "0", Q_NULLPTR));
         label_12->setText(QApplication::translate("LearnFeature", "\344\270\213\357\274\232", Q_NULLPTR));
-        lineEdit_bottom->setText(QApplication::translate("LearnFeature", "100", Q_NULLPTR));
+        lineEdit_bottom->setText(QApplication::translate("LearnFeature", "0", Q_NULLPTR));
         btn_sure_feature->setText(QApplication::translate("LearnFeature", "\347\241\256\345\256\232\347\211\271\345\276\201", Q_NULLPTR));
         groupBox_5->setTitle(QApplication::translate("LearnFeature", "\347\211\271\345\276\201\351\200\211\345\217\226\347\273\223\346\236\234", Q_NULLPTR));
         label_7->setText(QApplication::translate("LearnFeature", "\345\267\245\344\273\266\345\236\213\345\217\267\357\274\232", Q_NULLPTR));
